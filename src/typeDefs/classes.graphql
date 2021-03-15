@@ -1,4 +1,4 @@
-type Class {
+type Classes {
     id: ID,
     name: String,
     students: [Students]

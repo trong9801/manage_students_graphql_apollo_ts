@@ -1,0 +1,26 @@
+interface Result {
+    code : String
+    message : String
+    success : Boolean
+}
+type ResultStudents implements Result{
+      code : String
+    message : String
+    error : String
+    success : Boolean
+    result : [Students]
+}
+type ResultStudent implements  Result {
+    code : String
+    message : String
+    error : String
+    success : Boolean
+    result : Students
+}
+type ResultClasses implements Result {
+    code : String
+    message : String
+    success : Boolean
+     error : String
+    result : [Classes]
+}

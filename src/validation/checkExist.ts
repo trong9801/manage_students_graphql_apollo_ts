@@ -1,3 +1,4 @@
+import { ClassDB } from "../model/class"
 import {StudentsDB} from "../model/students"
 
 
@@ -7,6 +8,10 @@ export const CheckExist = async(DB : string, propertyValue : any , boolean: bool
     let arr = []
     if(DB =='student'){
         const findStudent = await StudentsDB.findOne({codeStudents : propertyValue})
+        arr.push(findStudent?._id)
+    }
+    if(DB =='class'){
+        const findStudent = await ClassDB.findOne({name : propertyValue})
         arr.push(findStudent?._id)
     }
     if(boolean){

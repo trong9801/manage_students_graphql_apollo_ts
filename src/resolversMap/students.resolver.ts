@@ -2,39 +2,149 @@ import mongoose from 'mongoose'
 import { IResolvers } from 'graphql-tools'
 import { StudentsDB } from '../model/students'
 import { ClassDB } from '../model/class'
+
+import { checkCodeStudents } from '../validation/checkCodeStudents'
 import { CheckExist } from '../validation/checkExist'
 
 export const StudentsResolver: IResolvers = {
     Query: {
         getStudents: async () => {
-            const result = await StudentsDB.find().populate({path:'nameClass',select: 'name'}).sort({ codeStudents: 'asc' })
-            return result
+            let result
+            try {
+                const data = await StudentsDB.find().populate({ path: 'nameClass', select: 'name' }).sort({ codeStudents: 'asc' })
+                result = {
+                    code: '200',
+                    message: 'thanh cong',
+                    success: true,
+                    result: data
+                }
+                return result
+            } catch (error) {
+                result = {
+                    status: '404',
+                    success: false,
+                    message: 'that bai',
+                    error: error.message
+                }
+                return result
+            }
         },
-        getStudent: async (_, { codeStudents }) => {
-            console.log(codeStudents)
-            const result = await StudentsDB.findOne({ codeStudents: codeStudents }).populate({path:'nameClass',select: 'name'})
-            return result
-        }    
+        getStudent: async (_, args) => {
+            let result
+            try {
+                const codeStudents = args.codeStudents
+                checkCodeStudents(codeStudents)
+                await CheckExist('student', codeStudents, false)
+                const data = await StudentsDB.findOne({ codeStudents: codeStudents }).populate({ path: 'nameClass', select: 'name' })
+                result = {
+                    status: '200',
+                    success: true,
+                    message: 'thanh cong',
+                    result: data
+                }
+                return result
+            } catch (error) {
+                result = {
+                    status: '404',
+                    success: false,
+                    message: 'that bai',
+                    error: error.message
+                }
+                return result
+            }
+        }
     },
     Mutation: {
-        addStudent: async (_, { name, nameClass, codeStudents, age }) => {
-            await CheckExist('student', codeStudents, true)
-            const findClass = await ClassDB.findOne({name: nameClass})
-            console.log(findClass)
-            const data = {
-                _id: new mongoose.Types.ObjectId,
-                name: name,
-                nameClass: findClass,
-                codeStudents: codeStudents,
-                age: age
+        addStudent: async (_, args) => {
+            let result
+            try {
+                const codeStudents = args.codeStudents
+                const nameClass = args.nameClass
+                await CheckExist('student', codeStudents, true)
+                const data = {
+                    ...args,
+                    _id: new mongoose.Types.ObjectId,
+                }
+                if(nameClass){
+                    await CheckExist('class', nameClass, false)
+                    const findClass = await ClassDB.findOne({ name: nameClass })
+                    data.nameClass = findClass
+                }
+                await StudentsDB.create(data)
+                result = {
+                    code: '200',
+                    message: 'thanh cong',
+                    success: true,
+                    result: data
+                }
+                return result
+            } catch (error) {
+                result = {
+                    status: '404',
+                    success: false,
+                    message: 'that bai',
+                    error: error.message
+                }
+                return result
             }
-            return await StudentsDB.create(data)
         },
-        deleteStudent: async (_, { codeStudents }) => {
-            await CheckExist('student', codeStudents, false)
-            await StudentsDB.findOneAndDelete({ codeStudents: codeStudents })
-            return 'thanh cong'
+        updateStudents: async (_,args) => {
+            let result
+            try {
+                const codeStudents = args.codeStudents
+                const nameClass = args.nameClass
+                checkCodeStudents(args.codeStudents)
+                await CheckExist('student', codeStudents, false)
+                const data = {
+                    ...args
+                }
+                if(nameClass){
+                    await CheckExist('class', nameClass, false)
+                    const findClass = await ClassDB.findOne({ name: nameClass })
+                    data.nameClass = findClass
+                }
+                await StudentsDB.findOneAndUpdate({ codeStudents: codeStudents }, data)
+                result = {
+                    code: '200',
+                    message: 'thanh cong',
+                    success: true,
+                    result: data
+                }
+                return result
+            } catch (error) {
+                result = {
+                    status: '404',
+                    success: false,
+                    message: 'that bai',
+                    error: error.message
+                }
+                return result
+            }
+        },
+        deleteStudent: async (_, args)=> {
+            let result
+            try {
+                const codeStudents = args.codeStudents
+                checkCodeStudents(codeStudents)
+                await CheckExist('student', codeStudents, false)
+                await StudentsDB.findOneAndDelete({ codeStudents: codeStudents })
+                result = {
+                    code: '200',
+                    message: 'thanh cong',
+                    success: true
+                }
+                return result
+            } catch (error) {
+                result = {
+                    status: '404',
+                    success: false,
+                    message: 'that bai',
+                    error: error.message
+                }
+                return result
+            }
         }
     }
 
 }
+
