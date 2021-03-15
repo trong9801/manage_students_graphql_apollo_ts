@@ -1,0 +1,14 @@
+
+type Query {
+#Students
+    getStudents : [Students] 
+    getStudent(codeStudents: String!) : Students 
+
+
+#Classes
+    getClass: [Class]
+}
+type Mutation {
+    addStudent( name : String, nameClass : String , codeStudents : String, age : String) : Students
+    deleteStudent (codeStudents : String!) : String
+}

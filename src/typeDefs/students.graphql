@@ -1,0 +1,8 @@
+type Students {
+    id : ID!,
+    name : String,
+    nameClass : Class ,
+    codeStudents : String,
+    age : String,
+}
+
